@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>TaskFlow – TODO App</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent:   #5B5FEF;
+      --accent2:  #7C7FF5;
+      --danger:   #EF5B5B;
+      --success:  #34C759;
+      --bg:       #F2F2F7;
+      --card:     #FFFFFF;
+      --text:     #1C1C1E;
+      --muted:    #8E8E93;
+      --border:   #E5E5EA;
+      --radius:   14px;
+      --input-h:  52px;
+      --btn-h:    52px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #1C1C1E;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    /* ── Phone Shell ── */
+    .phone {
+      width: 390px;
+      height: 844px;
+      background: var(--bg);
+      border-radius: 50px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 30px 80px rgba(0,0,0,.6);
+    }
+
+    /* Status Bar */
+    .status-bar {
+      height: 50px;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 28px 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      position: relative;
+      z-index: 10;
+    }
+    .status-bar .notch {
+      width: 120px;
+      height: 34px;
+      background: #000;
+      border-radius: 0 0 22px 22px;
+      position: absolute;
+      top: 0; left: 50%; transform: translateX(-50%);
+    }
+
+    /* ── Screens ── */
+    .screen {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--bg);
+      overflow-y: auto;
+      display: none;
+      flex-direction: column;
+      transition: opacity .25s;
+    }
+    .screen.active { display: flex; }
+
+    /* ──────────────────────────────────────────
+       SCREEN 1 — LOGIN
+    ────────────────────────────────────────── */
+    #screen-login {
+      background: linear-gradient(160deg, #5B5FEF 0%, #3730A3 100%);
+      justify-content: center;
+      align-items: center;
+      padding: 0 32px;
+      gap: 0;
+    }
+
+    .login-logo {
+      width: 72px; height: 72px;
+      background: rgba(255,255,255,.2);
+      border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px;
+      margin-bottom: 16px;
+    }
+    .login-title  { color: #fff; font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+    .login-sub    { color: rgba(255,255,255,.65); font-size: 15px; margin-bottom: 40px; }
+
+    .login-card {
+      width: 100%;
+      background: var(--card);
+      border-radius: 24px;
+      padding: 28px 24px;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+
+    .field-label {
+      font-size: 13px; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .5px;
+      margin-bottom: 6px;
+    }
+    .field-wrap { display: flex; flex-direction: column; }
+
+    input[type="text"], input[type="password"], input[type="date"], textarea {
+      height: var(--input-h);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 0 16px;
+      font-size: 16px;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+      transition: border-color .2s;
+      font-family: inherit;
+    }
+    input:focus, textarea:focus { border-color: var(--accent); background: #fff; }
+
+    textarea { height: 90px; padding: 14px 16px; resize: none; line-height: 1.5; }
+
+    .btn {
+      height: var(--btn-h);
+      border: none; border-radius: 14px;
+      font-size: 16px; font-weight: 600;
+      cursor: pointer; transition: opacity .15s, transform .1s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn:active { opacity: .85; transform: scale(.98); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-ghost   { background: transparent; color: var(--accent); border: 1.5px solid var(--accent); }
+    .btn-danger  { background: var(--danger); color: #fff; }
+
+    /* ──────────────────────────────────────────
+       SCREEN 2 — DASHBOARD / TASK LIST
+    ────────────────────────────────────────── */
+    #screen-dashboard { padding-top: 50px; }
+
+    .dash-header {
+      background: var(--card);
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .dash-top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .dash-greeting { font-size: 13px; color: var(--muted); }
+    .dash-name      { font-size: 22px; font-weight: 700; color: var(--text); margin-top: 2px; }
+
+    .signout-btn {
+      background: var(--bg);
+      border: none; border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 13px; font-weight: 600; color: var(--danger);
+      cursor: pointer;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .signout-btn:active { opacity: .75; }
+
+    .stats-row {
+      display: flex; gap: 10px; margin-top: 14px;
+    }
+    .stat-chip {
+      flex: 1;
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 10px 12px;
+      text-align: center;
+    }
+    .stat-chip .num { font-size: 20px; font-weight: 700; color: var(--accent); }
+    .stat-chip .lbl { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+    /* Filter bar */
+    .filter-bar {
+      display: flex; gap: 8px;
+      padding: 14px 20px 8px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .filter-bar::-webkit-scrollbar { display: none; }
+    .filter-chip {
+      flex-shrink: 0;
+      padding: 7px 16px;
+      border-radius: 20px;
+      font-size: 13px; font-weight: 600;
+      border: 1.5px solid var(--border);
+      background: var(--card);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .filter-chip.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* Task list */
+    .task-list {
+      padding: 8px 20px 100px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+
+    .task-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 16px;
+      display: flex; align-items: flex-start; gap: 14px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+      transition: opacity .2s;
+    }
+    .task-card.done { opacity: .6; }
+
+    .check-btn {
+      width: 26px; height: 26px; flex-shrink: 0;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: transparent;
+      cursor: pointer;
+      transition: all .2s;
+      display: flex; align-items: center; justify-content: center;
+      margin-top: 1px;
+    }
+    .check-btn.checked {
+      background: var(--success);
+      border-color: var(--success);
+    }
+    .check-btn.checked::after {
+      content: '✓';
+      color: #fff; font-size: 13px; font-weight: 700;
+    }
+
+    .task-body { flex: 1; }
+    .task-desc {
+      font-size: 15px; font-weight: 500; color: var(--text);
+      line-height: 1.4;
+    }
+    .task-card.done .task-desc {
+      text-decoration: line-through; color: var(--muted);
+    }
+    .task-meta { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+    .task-deadline { font-size: 12px; color: var(--muted); }
+    .task-deadline.overdue { color: var(--danger); font-weight: 600; }
+    .badge-done {
+      font-size: 11px; font-weight: 600;
+      background: #DCFCE7; color: #15803D;
+      padding: 2px 8px; border-radius: 20px;
+    }
+
+    .delete-btn {
+      background: none; border: none;
+      color: var(--danger); font-size: 18px;
+      cursor: pointer; padding: 4px;
+      border-radius: 8px;
+      transition: background .15s;
+      flex-shrink: 0;
+    }
+    .delete-btn:active { background: #FEE2E2; }
+
+    /* FAB */
+    .fab {
+      position: absolute;
+      bottom: 28px; right: 28px;
+      width: 58px; height: 58px;
+      background: var(--accent);
+      border-radius: 50%;
+      border: none;
+      color: #fff; font-size: 28px;
+      box-shadow: 0 6px 20px rgba(91,95,239,.5);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .fab:active { transform: scale(.93); box-shadow: 0 3px 10px rgba(91,95,239,.4); }
+
+    .empty-state {
+      text-align: center; padding: 50px 20px;
+      color: var(--muted); font-size: 15px;
+    }
+    .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+
+    /* ──────────────────────────────────────────
+       SCREEN 3 — NEW TASK FORM
+    ────────────────────────────────────────── */
+    #screen-new-task { padding-top: 50px; }
+
+    .nav-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-bar h2 { font-size: 17px; font-weight: 700; }
+    .nav-back {
+      background: none; border: none;
+      color: var(--accent); font-size: 15px; font-weight: 600;
+      cursor: pointer; padding: 4px;
+    }
+
+    .form-body { padding: 24px 20px; display: flex; flex-direction: column; gap: 20px; }
+
+    /* ── Toast ── */
+    .toast {
+      position: absolute;
+      bottom: 36px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: #1C1C1E; color: #fff;
+      padding: 12px 22px; border-radius: 20px;
+      font-size: 14px; font-weight: 500;
+      white-space: nowrap;
+      transition: transform .3s, opacity .3s;
+      opacity: 0; pointer-events: none;
+      z-index: 100;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+
+<div class="phone">
+
+  <!-- Status Bar (shared) -->
+  <div class="status-bar">
+    <span id="status-time">9:41</span>
+    <div class="notch"></div>
+    <span>●●●</span>
+  </div>
+
+  <!-- ════════════════════════════════
+       SCREEN 1 — LOGIN
+  ════════════════════════════════ -->
+  <div id="screen-login" class="screen active">
+    <div class="login-logo">✅</div>
+    <div class="login-title">TaskFlow</div>
+    <div class="login-sub">Sign in to manage your tasks</div>
+
+    <div class="login-card">
+      <div class="field-wrap">
+        <div class="field-label">Username</div>
+        <input id="inp-user" type="text" placeholder="Enter your username" autocomplete="off" />
+      </div>
+      <div class="field-wrap">
+        <div class="field-label">Password</div>
+        <input id="inp-pass" type="password" placeholder="Enter your password" />
+      </div>
+      <div id="login-error" style="color:#EF5B5B;font-size:13px;display:none;">
+        ⚠ Invalid username or password.
+      </div>
+      <button class="btn btn-primary" onclick="doLogin()">Sign In</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════
+       SCREEN 2 — DASHBOARD
+  ════════════════════════════════ -->
+  <div id="screen-dashboard" class="screen">
+    <div class="dash-header">
+      <div class="dash-top">
+        <div>
+          <div class="dash-greeting">Good day,</div>
+          <div class="dash-name" id="dash-name">User</div>
+        </div>
+        <button class="signout-btn" onclick="doSignOut()">⎋ Sign Out</button>
+      </div>
+      <div class="stats-row">
+        <div class="stat-chip">
+          <div class="num" id="stat-total">0</div>
+          <div class="lbl">Total</div>
+        </div>
+        <div class="stat-chip">
+          <div class="num" id="stat-pending">0</div>
+          <div class="lbl">Pending</div>
+        </div>
+        <div class="stat-chip">
+          <div class="num" id="stat-done">0</div>
+          <div class="lbl">Completed</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <div class="filter-chip active" data-filter="all" onclick="setFilter('all', this)">All Tasks</div>
+      <div class="filter-chip" data-filter="pending" onclick="setFilter('pending', this)">Pending</div>
+      <div class="filter-chip" data-filter="done" onclick="setFilter('done', this)">Completed</div>
+    </div>
+
+    <div class="task-list" id="task-list"></div>
+
+    <button class="fab" onclick="showScreen('screen-new-task')" title="Add new task">+</button>
+  </div>
+
+  <!-- ════════════════════════════════
+       SCREEN 3 — NEW TASK FORM
+  ════════════════════════════════ -->
+  <div id="screen-new-task" class="screen">
+    <div class="nav-bar">
+      <button class="nav-back" onclick="showScreen('screen-dashboard')">← Back</button>
+      <h2>New Task</h2>
+      <span style="width:60px"></span>
+    </div>
+
+    <div class="form-body">
+      <div class="field-wrap">
+        <div class="field-label">Task Description</div>
+        <textarea id="inp-desc" placeholder="What do you need to do?"></textarea>
+      </div>
+      <div class="field-wrap">
+        <div class="field-label">Deadline</div>
+        <input id="inp-deadline" type="date" />
+      </div>
+      <button class="btn btn-primary" onclick="addTask()">Add Task</button>
+      <button class="btn btn-ghost" onclick="showScreen('screen-dashboard')">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast"></div>
+
+</div><!-- /phone -->
+
+<script>
+  // ── State ──────────────────────────────────────
+  let currentUser = '';
+  let tasks = [
+    { id: 1, desc: 'Review lecture slides for Chapter 3', deadline: '2026-03-10', done: false },
+    { id: 2, desc: 'Submit assignment on mobile UI design', deadline: '2026-03-15', done: false },
+    { id: 3, desc: 'Read UX research paper', deadline: '2026-03-08', done: true },
+  ];
+  let nextId = 4;
+  let filter = 'all';
+
+  // Demo credentials (replace with real auth in production)
+  const CREDENTIALS = { 'student': '1234', 'admin': 'admin' };
+
+  // ── Clock ──────────────────────────────────────
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('status-time').textContent =
+      now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  updateClock();
+  setInterval(updateClock, 30000);
+
+  // ── Screen navigation ──────────────────────────
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if (id === 'screen-dashboard') renderTasks();
+  }
+
+  // ── Login ──────────────────────────────────────
+  function doLogin() {
+    const user = document.getElementById('inp-user').value.trim();
+    const pass = document.getElementById('inp-pass').value;
+    const errEl = document.getElementById('login-error');
+
+    if (CREDENTIALS[user] === pass) {
+      errEl.style.display = 'none';
+      currentUser = user.charAt(0).toUpperCase() + user.slice(1);
+      document.getElementById('dash-name').textContent = currentUser;
+      showScreen('screen-dashboard');
+    } else {
+      errEl.style.display = 'block';
+    }
+  }
+
+  // Allow Enter key on login
+  document.getElementById('inp-pass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  // ── Sign out ───────────────────────────────────
+  function doSignOut() {
+    document.getElementById('inp-user').value = '';
+    document.getElementById('inp-pass').value = '';
+    showScreen('screen-login');
+  }
+
+  // ── Filter ─────────────────────────────────────
+  function setFilter(f, el) {
+    filter = f;
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderTasks();
+  }
+
+  // ── Render task list ───────────────────────────
+  function renderTasks() {
+    const list = document.getElementById('task-list');
+    const today = new Date().toISOString().slice(0, 10);
+
+    let visible = tasks;
+    if (filter === 'pending') visible = tasks.filter(t => !t.done);
+    if (filter === 'done')    visible = tasks.filter(t =>  t.done);
+
+    // Stats
+    document.getElementById('stat-total').textContent   = tasks.length;
+    document.getElementById('stat-pending').textContent = tasks.filter(t => !t.done).length;
+    document.getElementById('stat-done').textContent    = tasks.filter(t =>  t.done).length;
+
+    if (visible.length === 0) {
+      list.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">${filter === 'done' ? '🎉' : '📋'}</div>
+          ${filter === 'done' ? 'No completed tasks yet.' : 'No tasks here. Tap <b>+</b> to add one!'}
+        </div>`;
+      return;
+    }
+
+    list.innerHTML = visible.map(t => {
+      const overdue = !t.done && t.deadline < today;
+      const deadlineLabel = t.deadline
+        ? new Date(t.deadline + 'T00:00:00').toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })
+        : '';
+      return `
+      <div class="task-card ${t.done ? 'done' : ''}" id="task-${t.id}">
+        <button class="check-btn ${t.done ? 'checked' : ''}" onclick="toggleTask(${t.id})"></button>
+        <div class="task-body">
+          <div class="task-desc">${escHtml(t.desc)}</div>
+          <div class="task-meta">
+            ${t.deadline ? `<span class="task-deadline ${overdue ? 'overdue' : ''}">📅 ${deadlineLabel}${overdue ? ' · Overdue' : ''}</span>` : ''}
+            ${t.done ? '<span class="badge-done">✓ Done</span>' : ''}
+          </div>
+        </div>
+        <button class="delete-btn" onclick="deleteTask(${t.id})">🗑</button>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Toggle complete ────────────────────────────
+  function toggleTask(id) {
+    const t = tasks.find(t => t.id === id);
+    if (t) { t.done = !t.done; renderTasks(); }
+  }
+
+  // ── Delete task ────────────────────────────────
+  function deleteTask(id) {
+    tasks = tasks.filter(t => t.id !== id);
+    renderTasks();
+    showToast('Task deleted');
+  }
+
+  // ── Add new task ───────────────────────────────
+  function addTask() {
+    const desc     = document.getElementById('inp-desc').value.trim();
+    const deadline = document.getElementById('inp-deadline').value;
+
+    if (!desc) { showToast('Please enter a description'); return; }
+
+    tasks.unshift({ id: nextId++, desc, deadline, done: false });
+    document.getElementById('inp-desc').value = '';
+    document.getElementById('inp-deadline').value = '';
+
+    showScreen('screen-dashboard');
+    showToast('Task added ✓');
+  }
+
+  // ── Toast ──────────────────────────────────────
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  // ── Helpers ────────────────────────────────────
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+</script>
+</body>
+</html>
