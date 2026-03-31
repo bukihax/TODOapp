@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@expo/metro-runtime": "^55.0.7",
+    "@rneui/base": "^5.0.0",
+    "@rneui/themed": "^5.0.0",
+    "react-dom": "19.2.0",
+    "react-native-web": "^0.21.2"
+  }
+}
