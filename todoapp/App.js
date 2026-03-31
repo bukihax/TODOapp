@@ -1,144 +1,69 @@
 import React, { useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  FlatList,
-  SafeAreaView,
-  Text,
-} from 'react-native';
-import { CheckBox, Input, Button } from '@rneui/themed';
+import LoginScreen from './screens/LoginScreen';
+import TaskListScreen from './screens/TaskListScreen';
+import AddTaskScreen from './screens/AddTaskScreen';
 
 const defaultTasks = [
-  { id: '1', title: 'Buy groceries', complete: false },
-  { id: '2', title: 'Walk the dog', complete: false },
-  { id: '3', title: 'Do laundry', complete: true },
-  { id: '4', title: 'Read a book', complete: false },
-  { id: '5', title: 'Call the dentist', complete: false },
+  { id: '1', title: 'Review project proposal', dueDate: 'Apr 2, 2026', completed: false },
+  { id: '2', title: 'Buy groceries', dueDate: 'Apr 1, 2026', completed: true },
 ];
 
 export default function App() {
+  const [screen, setScreen] = useState('login');
+  const [username, setUsername] = useState('');
   const [tasks, setTasks] = useState(defaultTasks);
-  const [inputText, setInputText] = useState('');
 
-  const toggleComplete = (id) => {
+  const handleLogin = (name) => {
+    setUsername(name);
+    setScreen('tasks');
+  };
+
+  const handleSignOut = () => {
+    setScreen('login');
+  };
+
+  const handleAddTask = (title, dueDate) => {
+    const newTask = {
+      id: Date.now().toString(),
+      title,
+      dueDate,
+      completed: false,
+    };
+    setTasks((prev) => [...prev, newTask]);
+    setScreen('tasks');
+  };
+
+  const handleToggleTask = (id) => {
     setTasks((prev) =>
-      prev.map((task) =>
-        task.id === id ? { ...task, complete: !task.complete } : task
-      )
+      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
     );
   };
 
-  const addTask = () => {
-    const trimmed = inputText.trim();
-    if (!trimmed) return;
-    const newTask = {
-      id: Date.now().toString(),
-      title: trimmed,
-      complete: false,
-    };
-    setTasks((prev) => [...prev, newTask]);
-    setInputText('');
+  const handleDeleteTask = (id) => {
+    setTasks((prev) => prev.filter((t) => t.id !== id));
   };
 
-  const renderItem = ({ item }) => (
-    <View style={styles.taskRow}>
-      <CheckBox
-        checked={item.complete}
-        onPress={() => toggleComplete(item.id)}
-        containerStyle={styles.checkbox}
+  if (screen === 'login') {
+    return <LoginScreen onLogin={handleLogin} />;
+  }
+
+  if (screen === 'addTask') {
+    return (
+      <AddTaskScreen
+        onBack={() => setScreen('tasks')}
+        onAdd={handleAddTask}
       />
-      <Text style={[styles.taskText, item.complete && styles.taskDone]}>
-        {item.title}
-      </Text>
-    </View>
-  );
+    );
+  }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <Text style={styles.header}>TaskFlow</Text>
-
-        <View style={styles.inputRow}>
-          <Input
-            placeholder="Add a new task..."
-            value={inputText}
-            onChangeText={setInputText}
-            containerStyle={styles.inputContainer}
-            onSubmitEditing={addTask}
-          />
-          <Button title="Add" onPress={addTask} buttonStyle={styles.addButton} />
-        </View>
-
-        <FlatList
-          data={tasks}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-          style={styles.list}
-        />
-      </View>
-    </SafeAreaView>
+    <TaskListScreen
+      username={username}
+      tasks={tasks}
+      onSignOut={handleSignOut}
+      onAddTask={() => setScreen('addTask')}
+      onToggleTask={handleToggleTask}
+      onDeleteTask={handleDeleteTask}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  container: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 20,
-  },
-  header: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  inputContainer: {
-    flex: 1,
-  },
-  addButton: {
-    backgroundColor: '#4a90e2',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    height: 40,
-  },
-  list: {
-    flex: 1,
-  },
-  taskRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    marginBottom: 8,
-    paddingRight: 12,
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 },
-  },
-  checkbox: {
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-  },
-  taskText: {
-    fontSize: 16,
-    color: '#333',
-    flex: 1,
-    flexWrap: 'wrap',
-  },
-  taskDone: {
-    textDecorationLine: 'line-through',
-    color: '#aaa',
-  },
-});
