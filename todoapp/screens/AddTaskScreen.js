@@ -56,7 +56,7 @@ export default function AddTaskScreen({ onBack, onAdd }) {
             <View style={styles.dateRow}>
               <TextInput
                 style={styles.dateInput}
-                placeholder="e.g. Apr 5, 2026"
+                placeholder="mm/dd/yyyy"
                 placeholderTextColor="#9CA3AF"
                 value={deadline}
                 onChangeText={setDeadline}
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#111827',
+    color: '#4F46E5',
   },
   textArea: {
     backgroundColor: '#FFFFFF',
