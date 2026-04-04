@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   View,
   Text,
@@ -6,45 +6,65 @@ import {
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
+
+const PRIMARY = '#4F46E5';
 
 export default function LoginScreen({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
+  const handleSignIn = () => {
+    onLogin(username.trim() || 'Alex');
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <View style={styles.titleSection}>
-          <Text style={styles.title}>TaskFlow</Text>
-          <Text style={styles.subtitle}>Manage your day</Text>
-        </View>
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <View style={styles.container}>
+          {/* Branding */}
+          <View style={styles.brandSection}>
+            <Text style={styles.appName}>TaskFlow</Text>
+            <Text style={styles.tagline}>Manage your day</Text>
+          </View>
 
-        <View style={styles.form}>
-          <TextInput
-            style={styles.input}
-            placeholder="Username"
-            placeholderTextColor="#9CA3AF"
-            value={username}
-            onChangeText={setUsername}
-            autoCapitalize="none"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            placeholderTextColor="#9CA3AF"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => onLogin(username.trim() || 'Alex')}
-          >
-            <Text style={styles.buttonText}>Sign In</Text>
-          </TouchableOpacity>
+          {/* Form */}
+          <View style={styles.form}>
+            <TextInput
+              style={styles.input}
+              placeholder="Username"
+              placeholderTextColor="#9CA3AF"
+              value={username}
+              onChangeText={setUsername}
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="next"
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Password"
+              placeholderTextColor="#9CA3AF"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              returnKeyType="done"
+              onSubmitEditing={handleSignIn}
+            />
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleSignIn}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.buttonText}>Sign In</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -52,52 +72,56 @@ export default function LoginScreen({ onLogin }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F2F2F7',
+  },
+  flex: {
+    flex: 1,
   },
   container: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: 28,
   },
-  titleSection: {
+  brandSection: {
     alignItems: 'center',
-    marginBottom: 48,
+    marginBottom: 52,
   },
-  title: {
-    fontSize: 32,
-    fontWeight: '700',
+  appName: {
+    fontSize: 34,
+    fontWeight: '800',
     color: '#111827',
-    marginBottom: 8,
+    letterSpacing: -0.5,
+    marginBottom: 6,
   },
-  subtitle: {
+  tagline: {
     fontSize: 16,
     color: '#6B7280',
+    fontWeight: '400',
   },
   form: {
-    width: '100%',
     gap: 12,
   },
   input: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    borderRadius: 12,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
     fontSize: 16,
     color: '#111827',
   },
   button: {
-    backgroundColor: '#4F46E5',
-    borderRadius: 8,
-    paddingVertical: 14,
+    backgroundColor: PRIMARY,
+    borderRadius: 12,
+    paddingVertical: 16,
     alignItems: 'center',
-    marginTop: 12,
+    marginTop: 8,
   },
   buttonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
 });

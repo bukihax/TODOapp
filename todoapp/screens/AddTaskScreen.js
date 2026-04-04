@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   View,
   Text,
@@ -11,24 +11,26 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+const PRIMARY = '#4F46E5';
+
 export default function AddTaskScreen({ onBack, onAdd }) {
   const [description, setDescription] = useState('');
   const [deadline, setDeadline] = useState('');
 
   const handleAdd = () => {
     if (!description.trim()) return;
-    onAdd(description.trim(), deadline.trim() || 'No deadline');
+    onAdd(description.trim(), deadline.trim());
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={onBack}>
+          <TouchableOpacity onPress={onBack} activeOpacity={0.7} hitSlop={8}>
             <Ionicons name="arrow-back" size={24} color="#111827" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>New Task</Text>
@@ -60,6 +62,8 @@ export default function AddTaskScreen({ onBack, onAdd }) {
                 placeholderTextColor="#9CA3AF"
                 value={deadline}
                 onChangeText={setDeadline}
+                keyboardType="numeric"
+                returnKeyType="done"
               />
               <Ionicons
                 name="calendar-outline"
@@ -71,9 +75,13 @@ export default function AddTaskScreen({ onBack, onAdd }) {
           </View>
         </View>
 
-        {/* Add button */}
+        {/* Footer button */}
         <View style={styles.footer}>
-          <TouchableOpacity style={styles.button} onPress={handleAdd}>
+          <TouchableOpacity
+            style={[styles.button, !description.trim() && styles.buttonDisabled]}
+            onPress={handleAdd}
+            activeOpacity={0.85}
+          >
             <Text style={styles.buttonText}>Add Task</Text>
           </TouchableOpacity>
         </View>
@@ -85,7 +93,7 @@ export default function AddTaskScreen({ onBack, onAdd }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F2F2F7',
   },
   flex: {
     flex: 1,
@@ -93,25 +101,25 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 14,
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 24,
     paddingVertical: 16,
     shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 3,
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
     shadowOffset: { width: 0, height: 1 },
     elevation: 2,
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#111827',
   },
   body: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 24,
+    paddingTop: 28,
     gap: 24,
   },
   fieldGroup: {
@@ -119,19 +127,19 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#4F46E5',
+    fontWeight: '700',
+    color: '#111827',
   },
   textArea: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    borderRadius: 8,
+    borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     fontSize: 16,
     color: '#111827',
-    minHeight: 100,
+    minHeight: 110,
   },
   dateRow: {
     position: 'relative',
@@ -141,31 +149,35 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    borderRadius: 8,
+    borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    paddingRight: 44,
+    paddingVertical: 14,
+    paddingRight: 48,
     fontSize: 16,
     color: '#111827',
   },
   calendarIcon: {
     position: 'absolute',
-    right: 14,
+    right: 16,
   },
   footer: {
     paddingHorizontal: 24,
-    paddingBottom: 32,
+    paddingBottom: 36,
     paddingTop: 12,
   },
   button: {
-    backgroundColor: '#4F46E5',
-    borderRadius: 8,
-    paddingVertical: 14,
+    backgroundColor: PRIMARY,
+    borderRadius: 12,
+    paddingVertical: 16,
     alignItems: 'center',
+  },
+  buttonDisabled: {
+    opacity: 0.5,
   },
   buttonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
 });

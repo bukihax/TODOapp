@@ -22,11 +22,18 @@ export default function App() {
     setScreen('login');
   };
 
+  const formatDate = (raw) => {
+    if (!raw || !raw.trim()) return 'No deadline';
+    const d = new Date(raw.trim());
+    if (isNaN(d)) return raw.trim();
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
   const handleAddTask = (title, dueDate) => {
     const newTask = {
       id: Date.now().toString(),
       title,
-      dueDate,
+      dueDate: formatDate(dueDate),
       completed: false,
     };
     setTasks((prev) => [...prev, newTask]);
